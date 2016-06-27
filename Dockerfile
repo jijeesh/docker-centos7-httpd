@@ -16,6 +16,17 @@ RUN mkdir /etc/httpd/sites-available
 RUN mkdir /etc/httpd/sites-enabled
 RUN mkdir -p ${dir}${cname}_${servn}/logs
 RUN mkdir -p ${dir}${cname}_${servn}/public_html
+
+RUN printf '# * Hardening Apache \n\
+ServerTokens Prod \n\
+ServerSignature Off \n\
+Header append X-FRAME-OPTIONS "SAMEORIGIN" \n\
+FileETag None \n\
+' \
+>> /etc/httpd/conf/httpd.conf
+
+
+
 RUN printf "IncludeOptional sites-enabled/${cname}_$servn.conf" >> /etc/httpd/conf/httpd.conf
 ####
 RUN printf "#### $cname $servn \n\
@@ -26,15 +37,26 @@ DocumentRoot ${dir}${cname}_${servn}/public_html \n\
 ErrorLog ${dir}${cname}_${servn}/logs/error.log \n\
 CustomLog ${dir}${cname}_${servn}/logs/requests.log combined \n\
 <Directory ${dir}${cname}_${servn}/public_html> \n\
-Options Indexes FollowSymLinks MultiViews \n\
+Options -Indexes \n\
+Options -ExecCGI -Includes \n\
+LimitRequestBody 204800 \n\
 AllowOverride All \n\
 Order allow,deny \n\
 Allow from all \n\
 Require all granted \n\
+<LimitExcept GET POST HEAD> \n\
+    deny from all \n\
+</LimitExcept> \n\
+<IfModule mod_headers.c> \n\
+    Header set X-XSS-Protection \"1; mode=block\" \n\
+    Header edit Set-Cookie ^(.*)$ $1;HttpOnly;Secure \n\
+</IfModule> \n\
+
 </Directory> \n\
 </VirtualHost>\n" \
  > /etc/httpd/sites-available/${cname}_$servn.conf
 RUN ln -s /etc/httpd/sites-available/${cname}_$servn.conf /etc/httpd/sites-enabled/${cname}_$servn.conf
+
 
 
 EXPOSE 80
