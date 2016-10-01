@@ -16,7 +16,8 @@ RUN mkdir /etc/httpd/sites-available
 RUN mkdir /etc/httpd/sites-enabled
 RUN mkdir -p ${dir}${cname}_${servn}/logs
 RUN mkdir -p ${dir}${cname}_${servn}/public_html
-
+ENV TZ=Asia/Tokyo
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN printf '# * Hardening Apache \n\
 ServerTokens Prod \n\
 ServerSignature Off \n\
