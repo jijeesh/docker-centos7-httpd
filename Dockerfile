@@ -62,6 +62,9 @@ RUN ln -s /etc/httpd/sites-available/${cname}_$servn.conf /etc/httpd/sites-enabl
 
 EXPOSE 80
 
-RUN rm -rf /run/httpd/* /tmp/httpd*
-CMD ["/usr/sbin/apachectl", "-D", "FOREGROUND"]
+#RUN rm -rf /run/httpd/* /tmp/httpd*
+#CMD ["/usr/sbin/apachectl", "-D", "FOREGROUND"]
+ADD run-httpd.sh /run-httpd.sh
+RUN chmod -v +x /run-httpd.sh
+CMD ["/run-httpd.sh"]
 
